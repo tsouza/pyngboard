@@ -46,7 +46,7 @@ settings.update(
     author_email='thiago@elastic.co',
     url='https://github.com/tsouza/pyngboard',
     packages=['pyngboard'],
-    install_requires=['requests_oauthlib>=0.6.2', 'requests>=2.0.0'],
+    install_requires=['requests_oauthlib>=0.6.1', 'requests>=2.0.0'],
     license='MIT',
     classifiers=(
         'Development Status :: 2 - Pre-Alpha',
