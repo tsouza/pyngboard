@@ -12,7 +12,7 @@ except ImportError:
 
 # Get the version
 version_regex = r'__version__ = ["\']([^"\']*)["\']'
-with open('requests_oauthlib/__init__.py', 'r') as f:
+with open('pyngboard/__init__.py', 'r') as f:
     text = f.read()
     match = re.search(version_regex, text)
 
