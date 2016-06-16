@@ -3,6 +3,8 @@ from .credentials import Credentials
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
+from urllib import urlencode
+
 PINGBOARD_OAUTH_URL='https://app.pingboard.com/oauth'
 PINGBOARD_TOKEN_URL=PINGBOARD_OAUTH_URL + '/token'
 PINGBOARD_REFRESH_URL=PINGBOARD_OAUTH_URL + '/refresh_token'
@@ -46,5 +48,12 @@ class PingboardClient:
         response = self.__request("GET", "users/" + str(user_id) + "?include=" + ",".join(includes))
         if response.status_code is 200:
             return response.json()['users'][0]
+
+        return None
+
+    def get_users(self, **kwargs):
+        response = self.__request("GET", "users?" + urlencode(kwargs, False))
+        if response.status_code is 200:
+            return response.json()['users']
 
         return None
