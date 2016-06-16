@@ -57,3 +57,17 @@ class PingboardClient:
             return response.json()['users']
 
         return None
+
+    def get_group(self, group_id, *includes):
+        response = self.__request("GET", "groups/" + str(group_id) + "?include=" + ",".join(includes))
+        if response.status_code is 200:
+            return response.json()['groups'][0]
+
+        return None
+
+    def get_groups(self, **kwargs):
+        response = self.__request("GET", "groups?" + urlencode(kwargs, False))
+        if response.status_code is 200:
+            return response.json()['groups']
+
+        return None
