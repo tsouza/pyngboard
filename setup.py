@@ -45,6 +45,7 @@ settings.update(
     author='Thiago Souza',
     author_email='thiago@elastic.co',
     url='https://github.com/tsouza/pyngboard',
+    keywords=['pingboard', 'Pingboard'],
     packages=['pyngboard'],
     install_requires=['requests_oauthlib>=0.6.1', 'requests>=2.0.0'],
     license='MIT',
