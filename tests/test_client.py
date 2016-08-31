@@ -23,6 +23,16 @@ class PingboardClientTest(unittest.TestCase):
         self.assertIsNotNone(users)
         self.assertEquals(len(users), 1)
 
+    def test_get_all_users_1(self):
+        users = self.client.get_all_users(page_size=200)
+        self.assertIsNotNone(users)
+        self.assertGreater(len(users), 1)
+
+    def test_get_all_users_2(self):
+        users = self.client.get_all_users()
+        self.assertIsNotNone(users)
+        self.assertGreater(len(users), 1)
+
     def test_get_group(self):
         group = self.client.get_group(TEST_GROUP_ID)
         self.assertIsNotNone(group)
@@ -32,3 +42,13 @@ class PingboardClientTest(unittest.TestCase):
         groups = self.client.get_groups(page=1, page_size=1)
         self.assertIsNotNone(groups)
         self.assertEquals(len(groups), 1)
+
+    def test_get_all_groups_1(self):
+        groups = self.client.get_all_groups(page_size=10)
+        self.assertIsNotNone(groups)
+        self.assertGreater(len(groups), 1)
+
+    def test_get_all_groups_2(self):
+        groups = self.client.get_all_groups()
+        self.assertIsNotNone(groups)
+        self.assertGreater(len(groups), 1)

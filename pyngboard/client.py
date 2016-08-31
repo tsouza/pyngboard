@@ -44,6 +44,27 @@ class PingboardClient:
     def __request(self, method, url, body=None):
         return self.__session.request(method, PINGBOARD_API_URL + url, body);
 
+    def __paging_get(self, endpoint, **kwargs):
+        result = None
+        if 'page_size' not in kwargs:
+            kwargs['page_size'] = 500
+        kwargs['page'] = 1
+        while True:
+            response = self.__request("GET", endpoint + "?" + urlencode(kwargs, False))
+            if response.status_code is not 200:
+                raise Exception("Unexpected status code " + response.status_code)
+            response = response.json()
+            if result is None:
+                result = response
+            else:
+                result[endpoint] += response[endpoint]
+                result['meta'] = response['meta']
+            if len(response[endpoint]) < kwargs['page_size']:
+                break
+            else:
+                kwargs['page'] += 1
+        return result[endpoint];
+
     def get_user(self, user_id, *includes):
         response = self.__request("GET", "users/" + str(user_id) + "?include=" + ",".join(includes))
         if response.status_code is 200:
@@ -58,6 +79,9 @@ class PingboardClient:
 
         return None
 
+    def get_all_users(self, **kwargs):
+        return self.__paging_get("users", **kwargs)
+
     def get_group(self, group_id, *includes):
         response = self.__request("GET", "groups/" + str(group_id) + "?include=" + ",".join(includes))
         if response.status_code is 200:
@@ -71,3 +95,6 @@ class PingboardClient:
             return response.json()['groups']
 
         return None
+
+    def get_all_groups(self, **kwargs):
+        return self.__paging_get("groups", **kwargs)
