@@ -59,10 +59,15 @@ class PingboardClient:
             else:
                 result[endpoint] += response[endpoint]
                 result['meta'] = response['meta']
-            if len(response[endpoint]) < kwargs['page_size']:
+            if len(response[endpoint]) < kwargs['page_size'] or ('max_size' in kwargs and len(result[endpoint]) >= kwargs['max_size']):
                 break
             else:
                 kwargs['page'] += 1
+
+        if 'max_size' in kwargs:
+            if len(result[endpoint]) - kwargs['max_size'] > 0:
+                result[endpoint] = result[endpoint][:kwargs['max_size']]
+
         return result[endpoint];
 
     def get_user(self, user_id, *includes):
@@ -98,3 +103,41 @@ class PingboardClient:
 
     def get_all_groups(self, **kwargs):
         return self.__paging_get("groups", **kwargs)
+
+    def get_linked_account(self, linked_account_id):
+        response = self.__request("GET", "linked_accounts/" + str(linked_account_id))
+        if response.status_code is 200:
+            return response.json()['linked_accounts'][0]
+
+        return None
+
+    def get_linked_account_providers(self):
+        response = self.__request("GET", "linked_account_providers")
+        if response.status_code is 200:
+            return response.json()['linked_account_providers']
+
+        return None
+
+    def get_custom_field(self, custom_field_id):
+        response = self.__request("GET", "custom_fields?id=" + str(custom_field_id))
+        if response.status_code is 200:
+            return response.json()['custom_fields'][0]
+
+        return None
+
+    def get_custom_fields(self):
+        response = self.__request("GET", "custom_fields")
+        if response.status_code is 200:
+            return response.json()['custom_fields']
+
+        return None
+
+    def get_statuses(self, **kwargs):
+        response = self.__request("GET", "statuses?" + urlencode(kwargs, False))
+        if response.status_code is 200:
+            return response.json()['statuses']
+
+        return None
+
+    def get_all_statuses(self, **kwargs):
+        return self.__paging_get("statuses", **kwargs)
