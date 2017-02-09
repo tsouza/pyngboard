@@ -16,7 +16,7 @@ class FileCredentials:
             self.client_id = credentials['client_id']
             self.client_secret = credentials['client_secret']
             return True
-        except Exception, e:
+        except Exception as e:
             return False
 
 
