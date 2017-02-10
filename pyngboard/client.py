@@ -3,7 +3,10 @@ from .credentials import Credentials
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
-from urllib import urlencode
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 PINGBOARD_OAUTH_URL='https://app.pingboard.com/oauth'
 PINGBOARD_TOKEN_URL=PINGBOARD_OAUTH_URL + '/token'
