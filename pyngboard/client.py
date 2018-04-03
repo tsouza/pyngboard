@@ -55,7 +55,7 @@ class PingboardClient:
         while True:
             response = self.__request("GET", endpoint + "?" + urlencode(kwargs, False))
             if response.status_code is not 200:
-                raise Exception("Unexpected status code " + response.status_code)
+                raise Exception("Unexpected status code " + str(response.status_code))
             response = response.json()
             if result is None:
                 result = response
