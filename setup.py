@@ -49,14 +49,14 @@ settings.update(
     packages=['pyngboard'],
     install_requires=['requests_oauthlib>=0.6.1', 'requests>=2.0.0'],
     license='MIT',
-    classifiers=(
+    classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-    ),
+    ],
     zip_safe=False,
     tests_require=tests_require,
     test_suite='tests'
