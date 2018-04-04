@@ -1,18 +1,19 @@
-from .credentials import Credentials
-
-from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
+from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+from requests_oauthlib import OAuth2Session
+
+from .credentials import Credentials
 
 try:
     from urllib import urlencode
 except ImportError:
     from urllib.parse import urlencode
 
-PINGBOARD_OAUTH_URL='https://app.pingboard.com/oauth'
-PINGBOARD_TOKEN_URL=PINGBOARD_OAUTH_URL + '/token'
-PINGBOARD_REFRESH_URL=PINGBOARD_OAUTH_URL + '/refresh_token'
+PINGBOARD_OAUTH_URL = 'https://app.pingboard.com/oauth'
+PINGBOARD_TOKEN_URL = PINGBOARD_OAUTH_URL + '/token?grant_type=client_credentials'
 
-PINGBOARD_API_URL='https://app.pingboard.com/api/v2/'
+PINGBOARD_API_URL = 'https://app.pingboard.com/api/v2/'
+
 
 class PingboardClient:
 
@@ -32,20 +33,31 @@ class PingboardClient:
 
     def __init_oauth(self):
         self.__client = BackendApplicationClient(client_id=self.__credentials.client_id)
-        self.__session = OAuth2Session(client=self.__client)
-        self.__token = self.__session.fetch_token(token_url=PINGBOARD_TOKEN_URL,
-                client_id=self.__credentials.client_id,
-                client_secret=self.__credentials.client_secret)
-        self.__session = OAuth2Session(client=self.__client,
-                token=self.__token,
-                auto_refresh_url=PINGBOARD_REFRESH_URL,
-                token_updater=self.__set_token)
+        self.__get_new_session()
 
     def __set_token(self, token):
         self.__token = token
 
+    def __get_token(self, session):
+        token = session.fetch_token(token_url=PINGBOARD_TOKEN_URL,
+                                    client_id=self.__credentials.client_id,
+                                    client_secret=self.__credentials.client_secret)
+        return token
+
+    def __get_new_session(self):
+        session = OAuth2Session(client=self.__client)
+        self.__session = OAuth2Session(client=self.__client,
+                                       token=self.__get_token(session),
+                                       token_updater=self.__set_token)
+        return
+
     def __request(self, method, url, body=None):
-        return self.__session.request(method, PINGBOARD_API_URL + url, body);
+        try:
+            return self.__session.request(method, PINGBOARD_API_URL + url, body)
+        except TokenExpiredError:
+            # token expired. get a new one
+            self.__get_new_session()
+            return self.__session.request(method, PINGBOARD_API_URL + url, body)
 
     def __paging_get(self, endpoint, **kwargs):
         result = None
@@ -55,14 +67,15 @@ class PingboardClient:
         while True:
             response = self.__request("GET", endpoint + "?" + urlencode(kwargs, False))
             if response.status_code is not 200:
-                raise Exception("Unexpected status code " + response.status_code)
+                raise Exception("Unexpected status code " + str(response.status_code))
             response = response.json()
             if result is None:
                 result = response
             else:
                 result[endpoint] += response[endpoint]
                 result['meta'] = response['meta']
-            if len(response[endpoint]) < kwargs['page_size'] or ('max_size' in kwargs and len(result[endpoint]) >= kwargs['max_size']):
+            if len(response[endpoint]) < kwargs['page_size'] or (
+                'max_size' in kwargs and len(result[endpoint]) >= kwargs['max_size']):
                 break
             else:
                 kwargs['page'] += 1
