@@ -1,3 +1,5 @@
+import time
+
 from oauthlib.oauth2 import BackendApplicationClient
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 from requests_oauthlib import OAuth2Session
@@ -13,7 +15,7 @@ PINGBOARD_OAUTH_URL = 'https://app.pingboard.com/oauth'
 PINGBOARD_TOKEN_URL = PINGBOARD_OAUTH_URL + '/token?grant_type=client_credentials'
 
 PINGBOARD_API_URL = 'https://app.pingboard.com/api/v2/'
-
+PINGBOARD_TOKEN_MAX_RETRIES = 5
 
 class PingboardClient:
 
@@ -39,9 +41,20 @@ class PingboardClient:
         self.__token = token
 
     def __get_token(self, session):
-        token = session.fetch_token(token_url=PINGBOARD_TOKEN_URL,
-                                    client_id=self.__credentials.client_id,
-                                    client_secret=self.__credentials.client_secret)
+        count = 0
+        token = None
+        # PB sometimes returns an expired token. If this is the case, retry with a back off until a valid token is given
+        # or the max retries is hit.
+        while count < PINGBOARD_TOKEN_MAX_RETRIES:
+            token = session.fetch_token(token_url=PINGBOARD_TOKEN_URL,
+                                        client_id=self.__credentials.client_id,
+                                        client_secret=self.__credentials.client_secret)
+            count += 1
+            if token.get('expires_at') > time.time():
+                break
+            else:
+                time.sleep(count)
+
         return token
 
     def __get_new_session(self):
