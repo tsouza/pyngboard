@@ -1,6 +1,6 @@
 from .client import PingboardClient
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 import logging
 try:  # Python 2.7+
